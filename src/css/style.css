@@ -1,0 +1,90 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+body {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    margin: 0 auto;
+    font-size: medium;
+    width: 100%;
+    height: 100%;
+    padding-top: 60px;
+    background-color: #107abb;
+}
+.board {
+    display: flex;
+    align-items: flex-start;
+    width: 1000px;
+    border-radius: 5px;
+    text-align: center;
+    margin: 0 auto;
+}
+.column {
+    position: relative;
+    width: 300px;
+    background-color: #dee2e5;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    padding: 10px;
+}
+.column:nth-child(2n){
+    margin: 0 50px;
+}
+.column-header {
+    text-transform: uppercase;
+}
+.task-list {
+    min-height: 50px;
+    padding: 20px;
+}
+.column-add {
+    cursor: pointer;
+    align-items: center;
+}
+.add-form-textarea {
+    resize: vertical;
+    width: 276px;
+    border-radius: 5px;
+    background-color: #ffffff;
+  
+}
+.add-form-card {
+    display: flex;
+    justify-content: space-evenly;  
+}
+.add-form-add-card {
+    display: block;
+    width: 100px;
+    height: 40px;
+    padding: 0 10px;
+    font-size: medium;
+    border-radius: 5px;
+    color: white;
+    background-color: #5ca84d;
+    cursor: pointer;
+}
+.add-form-close-card {
+    display: block;
+    cursor: pointer;
+    border: 0;
+    font-size: 30px;
+    background-color: #dee2e5;
+}
+.add-form-close-card::after {
+    content: '✕';
+}
+.task {
+    list-style: none;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    background-color: #ffffff;
+    cursor: grab;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+  
