@@ -11,11 +11,19 @@ export default class Board {
     this.addNewTask = this.addNewTask.bind(this);
     this.closeForm = this.closeForm.bind(this);
     this.removeTask = this.removeTask.bind(this);
+    this.saveTasks = this.saveTasks.bind(this);
+    this.drawTasks = this.drawTasks.bind(this);
+    this.closeBtnEvent = this.closeBtnEvent.bind(this);
+    this.mouseLeave = this.mouseLeave.bind(this);
+    this.mouseDown = this.mouseDown.bind(this);
+    this.mouseBtn = this.mouseBtn.bind(this);
   }
   init() {
     this.drawBoard();
+    this.drawTasks();
     const addList = this.board.querySelectorAll(".column-add");
     [...addList].forEach((el) => el.addEventListener("click", this.addInput));
+    window.addEventListener("beforeunload", this.saveTasks);
   }
   drawBoard() {
     this.board = document.createElement("main");
@@ -66,12 +74,12 @@ export default class Board {
       const columnAdd = document.createElement("div");
       columnAdd.classList.add("column-add");
       columnAdd.textContent = "Add card";
-      console.log(columnAdd);
       closestColumn.removeChild(
         closestColumn.querySelector(".column-add-form"),
       );
       closestColumn.appendChild(columnAdd);
       columnAdd.addEventListener("click", this.addInput);
+      this.mouseBtn();
     } else {
       alert("Add some text!");
     }
@@ -92,4 +100,69 @@ export default class Board {
     const parent = event.target.closest(".task-list");
     parent.removeChild(task);
   }
+  saveTasks() {
+    this.taskTodo = [];
+    this.taskProgess = [];
+    this.taskDone = [];
+    const todo = this.board.querySelector(".todo");
+    const progress = this.board.querySelector(".progress");
+    const done = this.board.querySelector(".done");
+    const listTodo = [...todo.querySelectorAll(".task")];
+    const listProgress = [...progress.querySelectorAll(".task")];
+    const listDone = [...done.querySelectorAll(".task")];
+    listTodo.forEach((elem) => this.taskTodo.push(elem.textContent));
+    listProgress.forEach((elem) => this.taskProgess.push(elem.textContent));
+    listDone.forEach((elem) => this.taskDone.push(elem.textContent));
+    this.tasks = [this.taskTodo, this.taskProgess, this.taskDone];
+    localStorage.setItem("tasks", JSON.stringify(this.tasks));
+  };
+  drawTasks() {
+    const savedTasks = localStorage.getItem("tasks");
+    if (savedTasks){
+        this.tasks = JSON.parse(savedTasks);
+        let index;
+        const taskLists = document.querySelectorAll(".task-list");
+        for (index in this.tasks){
+            this.tasks[index].forEach(elem => {
+                new Card(taskLists[index], elem).addTask();
+                if (index == 0) {this.taskTodo.push(elem)};
+                if (index == 1) {this.taskProgess.push(elem)};
+                if (index == 2) {this.taskDone.push(elem)};
+            });
+        }
+    } else {
+        console.warn("empty localStorage");
+    }
+    this.mouseBtn();
+  }
+  closeBtnEvent(event) {
+    if (event.target.classList.contains("task") &&
+    !event.target.querySelector(".closeBtn")){
+        const closeBtn = document.createElement("div");
+        closeBtn.classList.add("task-list-close");
+        closeBtn.classList.add("closeBtn");
+        event.target.appendChild(closeBtn);
+        closeBtn.style.top = `${closeBtn.offsetTop - closeBtn.offsetHeight / 2}px`;
+        closeBtn.style.left = `${event.target.offsetWidth - closeBtn.offsetWidth -3}px`
+        closeBtn.addEventListener("click", this.removeTask);
+    }
+  }
+  mouseBtn() {
+    const taskLists = this.board.querySelectorAll(".task");
+    [...taskLists].forEach( (elem) => {
+        elem.addEventListener("mouseover", this.closeBtnEvent);
+    });
+    [...taskLists].forEach( (elem) => {
+        elem.addEventListener("mouseleave", this.mouseLeave);
+    });
+    [...taskLists].forEach( (elem) => {
+        elem.addEventListener("mousedown", this.mouseDown);
+    })
+  }
+  mouseLeave(event) {
+    event.target.removeChild(event.target.querySelector(".closeBtn"));
+  };
+  mouseDown(event) {
+
+  };
 }

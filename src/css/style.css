@@ -87,4 +87,33 @@ body {
     justify-content: space-between;
     position: relative;
   }
+  .dragged {
+    border-radius: 5px;
+    position: absolute;
+    z-index: 999;
+    background-color: #ffffff;
+    list-style: none;
+    padding: 10px;
+    margin: 10px 0px;
+    cursor: grabbing;
+    display: flex;
+    justify-content: space-between;
+    opacity: 50%;
+    transform: rotate(10deg);
+  }
+  .task-list-close {}
+  .closeBtn {
+    position: absolute;
+    z-index: 9999;
+    display: block;
+    border-radius: 5px;
+    width: 17px;
+    height: 17px;
+    background-color: #ececec9b;
+    color: #353738;
+    cursor: pointer;
+  }
   
+  .close::after {
+    content: '✕';
+  }
