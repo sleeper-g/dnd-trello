@@ -86,8 +86,8 @@ body {
     display: flex;
     justify-content: space-between;
     position: relative;
-  }
-  .dragged {
+}
+.dragged {
     border-radius: 5px;
     position: absolute;
     z-index: 999;
@@ -100,9 +100,8 @@ body {
     justify-content: space-between;
     opacity: 50%;
     transform: rotate(10deg);
-  }
-  .task-list-close {}
-  .closeBtn {
+}
+.closeBtn {
     position: absolute;
     z-index: 9999;
     display: block;
@@ -112,8 +111,7 @@ body {
     background-color: #ececec9b;
     color: #353738;
     cursor: pointer;
-  }
-  
-  .close::after {
+}
+.close::after {
     content: '✕';
-  }
+}

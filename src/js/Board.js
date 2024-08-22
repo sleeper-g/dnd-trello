@@ -23,17 +23,15 @@ export default class Board {
     this.drawTasks();
     const addList = this.board.querySelectorAll(".column-add");
     [...addList].forEach((el) => el.addEventListener("click", this.addInput));
-    window.addEventListener("beforeunload", this.saveTasks);
+    document.addEventListener("beforeunload", this.saveTasks);
   }
-  drawBoard() {
-    this.board = document.createElement("main");
-    this.board.classList.add("board");
-    this.board.innerHTML = `<div class="column">
+  static get markupBoard() {
+    return `<div class="column">
           <h2 class="column-header">Todo</h2>
           <ul class="task-list todo"></ul>
           <div class="column-add">Add another card</div>
         </div>
-        <div class="column">
+        <div  class="column">
           <h2 class="column-header">In Progress</h2>
           <ul class="task-list progress"></ul>
           <div class="column-add">Add another card</div>
@@ -44,19 +42,25 @@ export default class Board {
           <div class="column-add">Add another card</div>
         </div>
         `;
+  }
+  static get markupInput() {
+    return `<textarea class="add-form-textarea" type="text" 
+        placeholder="Enter a title for this card"></textarea>
+        <div class="add-form-card">
+          <button class="add-form-add-card">Add Card</button>
+          <button class="add-form-close-card"></button>
+        </div>`;
+  }
+  drawBoard() {
+    this.board = document.createElement("main");
+    this.board.classList.add("board");
+    this.board.innerHTML = this.constructor.markupBoard;
     document.querySelector("body").appendChild(this.board);
   }
   addInput(event) {
     const newCardForm = document.createElement("form");
     newCardForm.classList.add("column-add-form");
-    newCardForm.innerHTML = `
-        <textarea class="add-form-textarea" type="text" 
-        placeholder="Enter a title for this card"></textarea>
-        <div class="add-form-card">
-          <button class="add-form-add-card">Add Card</button>
-          <button class="add-form-close-card"></button>
-        </div>
-        `;
+    newCardForm.innerHTML = this.constructor.markupInput;
     const closestColumn = event.target.closest(".column");
     event.target.replaceWith(newCardForm);
     const add = closestColumn.querySelector(".add-form-add-card");
@@ -115,54 +119,66 @@ export default class Board {
     listDone.forEach((elem) => this.taskDone.push(elem.textContent));
     this.tasks = [this.taskTodo, this.taskProgess, this.taskDone];
     localStorage.setItem("tasks", JSON.stringify(this.tasks));
-  };
+  }
   drawTasks() {
     const savedTasks = localStorage.getItem("tasks");
-    if (savedTasks){
-        this.tasks = JSON.parse(savedTasks);
-        let index;
-        const taskLists = document.querySelectorAll(".task-list");
-        for (index in this.tasks){
-            this.tasks[index].forEach(elem => {
-                new Card(taskLists[index], elem).addTask();
-                if (index == 0) {this.taskTodo.push(elem)};
-                if (index == 1) {this.taskProgess.push(elem)};
-                if (index == 2) {this.taskDone.push(elem)};
-            });
-        }
+    if (savedTasks) {
+      this.tasks = JSON.parse(savedTasks);
+      let index;
+      const taskLists = document.querySelectorAll(".task-list");
+      for (index in this.tasks) {
+        this.tasks[index].forEach((elem) => {
+          new Card(taskLists[index], elem).addTask();
+          if (index == 0) {
+            this.taskTodo.push(elem);
+          }
+          if (index == 1) {
+            this.taskProgess.push(elem);
+          }
+          if (index == 2) {
+            this.taskDone.push(elem);
+          }
+        });
+      }
     } else {
-        console.warn("empty localStorage");
+      console.warn("empty localStorage");
     }
     this.mouseBtn();
   }
   closeBtnEvent(event) {
-    if (event.target.classList.contains("task") &&
-    !event.target.querySelector(".closeBtn")){
-        const closeBtn = document.createElement("div");
-        closeBtn.classList.add("task-list-close");
-        closeBtn.classList.add("closeBtn");
-        event.target.appendChild(closeBtn);
-        closeBtn.style.top = `${closeBtn.offsetTop - closeBtn.offsetHeight / 2}px`;
-        closeBtn.style.left = `${event.target.offsetWidth - closeBtn.offsetWidth -3}px`
-        closeBtn.addEventListener("click", this.removeTask);
+    if (
+      event.target.classList.contains("task") &&
+      !event.target.querySelector(".closeBtn")
+    ) {
+      const closeBtn = document.createElement("div");
+      closeBtn.classList.add("task-list-close");
+      closeBtn.classList.add("closeBtn");
+      event.target.appendChild(closeBtn);
+      closeBtn.style.top = `${closeBtn.offsetTop - closeBtn.offsetHeight / 2}px`;
+      closeBtn.style.left = `${event.target.offsetWidth - closeBtn.offsetWidth - 3}px`;
+      closeBtn.addEventListener("click", this.removeTask);
     }
   }
   mouseBtn() {
     const taskLists = this.board.querySelectorAll(".task");
-    [...taskLists].forEach( (elem) => {
-        elem.addEventListener("mouseover", this.closeBtnEvent);
+    [...taskLists].forEach((elem) => {
+      elem.addEventListener("mouseover", this.closeBtnEvent);
     });
-    [...taskLists].forEach( (elem) => {
-        elem.addEventListener("mouseleave", this.mouseLeave);
+    [...taskLists].forEach((elem) => {
+      elem.addEventListener("mouseleave", this.mouseLeave);
     });
-    [...taskLists].forEach( (elem) => {
-        elem.addEventListener("mousedown", this.mouseDown);
-    })
+    [...taskLists].forEach((elem) => {
+      elem.addEventListener("mousedown", this.mouseDown);
+    });
   }
   mouseLeave(event) {
     event.target.removeChild(event.target.querySelector(".closeBtn"));
-  };
+  }
   mouseDown(event) {
-
-  };
+    if (event.target.classList.contains("task")) {
+      this.dragged = event.target;
+      this.ghostEl = event.target.cloneNode(true);
+      console.log(this.ghostEl);
+    }
+  }
 }
