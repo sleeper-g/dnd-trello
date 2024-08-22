@@ -40,17 +40,15 @@ class Board {
     this.drawTasks();
     const addList = this.board.querySelectorAll(".column-add");
     [...addList].forEach(el => el.addEventListener("click", this.addInput));
-    window.addEventListener("beforeunload", this.saveTasks);
+    document.addEventListener("beforeunload", this.saveTasks);
   }
-  drawBoard() {
-    this.board = document.createElement("main");
-    this.board.classList.add("board");
-    this.board.innerHTML = `<div class="column">
+  static get markupBoard() {
+    return `<div class="column">
           <h2 class="column-header">Todo</h2>
           <ul class="task-list todo"></ul>
           <div class="column-add">Add another card</div>
         </div>
-        <div class="column">
+        <div  class="column">
           <h2 class="column-header">In Progress</h2>
           <ul class="task-list progress"></ul>
           <div class="column-add">Add another card</div>
@@ -61,19 +59,25 @@ class Board {
           <div class="column-add">Add another card</div>
         </div>
         `;
+  }
+  static get markupInput() {
+    return `<textarea class="add-form-textarea" type="text" 
+        placeholder="Enter a title for this card"></textarea>
+        <div class="add-form-card">
+          <button class="add-form-add-card">Add Card</button>
+          <button class="add-form-close-card"></button>
+        </div>`;
+  }
+  drawBoard() {
+    this.board = document.createElement("main");
+    this.board.classList.add("board");
+    this.board.innerHTML = this.constructor.markupBoard;
     document.querySelector("body").appendChild(this.board);
   }
   addInput(event) {
     const newCardForm = document.createElement("form");
     newCardForm.classList.add("column-add-form");
-    newCardForm.innerHTML = `
-        <textarea class="add-form-textarea" type="text" 
-        placeholder="Enter a title for this card"></textarea>
-        <div class="add-form-card">
-          <button class="add-form-add-card">Add Card</button>
-          <button class="add-form-close-card"></button>
-        </div>
-        `;
+    newCardForm.innerHTML = this.constructor.markupInput;
     const closestColumn = event.target.closest(".column");
     event.target.replaceWith(newCardForm);
     const add = closestColumn.querySelector(".add-form-add-card");
@@ -143,15 +147,12 @@ class Board {
           if (index == 0) {
             this.taskTodo.push(elem);
           }
-          ;
           if (index == 1) {
             this.taskProgess.push(elem);
           }
-          ;
           if (index == 2) {
             this.taskDone.push(elem);
           }
-          ;
         });
       }
     } else {
@@ -185,7 +186,13 @@ class Board {
   mouseLeave(event) {
     event.target.removeChild(event.target.querySelector(".closeBtn"));
   }
-  mouseDown(event) {}
+  mouseDown(event) {
+    if (event.target.classList.contains("task")) {
+      this.dragged = event.target;
+      this.ghostEl = event.target.cloneNode(true);
+      console.log(this.ghostEl);
+    }
+  }
 }
 ;// CONCATENATED MODULE: ./src/js/app.js
 
