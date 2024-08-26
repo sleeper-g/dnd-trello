@@ -101,17 +101,6 @@ body {
     opacity: 50%;
     transform: rotate(10deg);
 }
-.closeBtn {
-    position: absolute;
-    z-index: 9999;
-    display: block;
-    border-radius: 5px;
-    width: 17px;
-    height: 17px;
-    background-color: #ececec9b;
-    color: #353738;
-    cursor: pointer;
-}
 .close::after {
     content: '✕';
 }
