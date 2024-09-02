@@ -99,17 +99,13 @@ export default class Board {
     const todo = this.board.querySelector(".todo");
     const inP = this.board.querySelector(".in-progress");
     const done = this.board.querySelector(".done");
-
     const tasksTodo = [...todo.querySelectorAll(".task")];
     const tasksInP = [...inP.querySelectorAll(".task")];
     const tasksDone = [...done.querySelectorAll(".task")];
-
     tasksTodo.forEach((task) => this.tasksTodo.push(task.textContent));
     tasksInP.forEach((task) => this.tasksInP.push(task.textContent));
     tasksDone.forEach((task) => this.tasksDone.push(task.textContent));
-
     this.tasks = [this.tasksTodo, this.tasksInP, this.tasksDone];
-
     localStorage.setItem("tasks", JSON.stringify(this.tasks));
   }
 
@@ -215,7 +211,6 @@ export default class Board {
       this.hidden.style.width = `${this.dragged.offsetWidth}px`;
       this.hidden.style.height = `${this.dragged.offsetHeight}px`;
 
-      this.dragged.style.display = "none";
       this.board.addEventListener("mousemove", this.dragMove);
       document.addEventListener("mousemove", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
@@ -227,13 +222,13 @@ export default class Board {
     if (!this.dragged) {
       return;
     }
-
+    this.dragged.style.display = "none";
     this.hidden.style.top = `${event.pageY - this.top}px`;
     this.hidden.style.left = `${event.pageX - this.left}px`;
   }
 
   mouseUp() {
-    if (!this.dragged) {
+    if (!this.dragged || !this.newPlace) {
       return;
     }
 
@@ -252,9 +247,10 @@ export default class Board {
       return;
     }
 
-    const closestColumn = event.target.closest(".tasks-list");
+    const closestColumn = event.target.closest(".column");
 
     if (closestColumn) {
+      const closestColumnTask = closestColumn.querySelector(".tasks-list");
       const allTasks = closestColumn.querySelectorAll(".task");
       const allPos = [closestColumn.getBoundingClientRect().top];
 
@@ -274,9 +270,9 @@ export default class Board {
 
       const itemIndex = allPos.findIndex((item) => item > event.pageY);
       if (itemIndex !== -1) {
-        closestColumn.insertBefore(this.newPlace, allTasks[itemIndex - 1]);
+        closestColumnTask.insertBefore(this.newPlace, allTasks[itemIndex - 1]);
       } else {
-        closestColumn.appendChild(this.newPlace);
+        closestColumnTask.appendChild(this.newPlace);
       }
     }
   }
