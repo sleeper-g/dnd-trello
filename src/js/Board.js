@@ -191,6 +191,7 @@ export default class Board {
   }
 
   mouseDown(event) {
+    event.preventDefault();
     if (event.target.classList.contains("task")) {
       this.dragged = event.target;
       this.hidden = event.target.cloneNode(true);
@@ -220,6 +221,8 @@ export default class Board {
   dragMove(event) {
     event.preventDefault();
     if (!this.dragged) {
+      this.hidden = null;
+
       return;
     }
     this.dragged.style.display = "none";
@@ -228,17 +231,17 @@ export default class Board {
   }
 
   mouseUp() {
-    if (!this.dragged || !this.newPlace) {
-      return;
-    }
+    if (this.dragged && this.newPlace) {
 
     this.newPlace.replaceWith(this.dragged);
 
     this.dragged.style.display = "flex";
     document.body.removeChild(document.body.querySelector(".dragged"));
 
-    this.hidden = null;
     this.dragged = null;
+      //return;
+    }
+
   }
 
   showPossiblePlace(event) {
