@@ -73,7 +73,7 @@ class Board {
     this.board = document.createElement("main");
     this.board.classList.add("board");
     this.board.innerHTML = this.constructor.markupBoard;
-    document.querySelector("body").appendChild(this.board);
+    document.querySelector("body").append(this.board);
   }
   addInput(event) {
     const newCardForm = document.createElement("form");
@@ -96,8 +96,8 @@ class Board {
       const columnAdd = document.createElement("div");
       columnAdd.classList.add("column-add");
       columnAdd.textContent = "Add card";
-      closestColumn.removeChild(closestColumn.querySelector(".column-add-form"));
-      closestColumn.appendChild(columnAdd);
+      closestColumn.querySelector(".column-add-form").remove();
+      closestColumn.append(columnAdd);
       columnAdd.addEventListener("click", this.addInput);
       this.addListeners();
     } else {
@@ -124,6 +124,8 @@ class Board {
     const savedTasks = localStorage.getItem("tasks");
     if (savedTasks) {
       this.tasks = JSON.parse(savedTasks);
+    } else {
+      this.tasks = [[], [], []];
     }
     const parents = [".todo", ".in-progress", ".done"];
     for (let index = 0; index < parents.length; index += 1) {
@@ -150,8 +152,8 @@ class Board {
     columnAdd.textContent = "Add another card";
     const parent = event.target.closest(".column");
     const child = parent.querySelector(".column-add-form");
-    parent.removeChild(child);
-    parent.appendChild(columnAdd);
+    child.remove();
+    parent.append(columnAdd);
     columnAdd.addEventListener("click", this.addInput);
   }
   addListeners() {
@@ -162,33 +164,33 @@ class Board {
   }
   removeTask(event) {
     const task = event.target.closest(".task");
-    const parent = event.target.closest(".tasks-list");
-    parent.removeChild(task);
+    task.remove();
   }
   closeBtnEvent(event) {
     if (event.target.classList.contains("task") && !event.target.querySelector(".close")) {
       const closeEl = document.createElement("div");
       closeEl.classList.add("task-list-close");
       closeEl.classList.add("close");
-      event.target.appendChild(closeEl);
+      event.target.append(closeEl);
       closeEl.style.top = `${closeEl.offsetTop - closeEl.offsetHeight / 2}px`;
       closeEl.style.left = `${event.target.offsetWidth - closeEl.offsetWidth - 3}px`;
       closeEl.addEventListener("click", this.removeTask);
     }
   }
   onTaskLeave(event) {
-    event.target.removeChild(event.target.querySelector(".close"));
+    event.target.querySelector('.close').remove();
   }
   mouseDown(event) {
+    event.preventDefault();
     if (event.target.classList.contains("task")) {
       this.dragged = event.target;
       this.hidden = event.target.cloneNode(true);
-      this.hidden.removeChild(this.hidden.querySelector(".close"));
+      this.hidden.querySelector(".close").remove();
       this.hidden.classList.add("dragged");
       this.hidden.classList.add("ghost");
       this.hidden.style.width = `${this.dragged.offsetWidth}px`;
       this.hidden.style.height = `${this.dragged.offsetHeight}px`;
-      document.body.appendChild(this.hidden);
+      document.body.append(this.hidden);
       const {
         top,
         left
@@ -199,6 +201,7 @@ class Board {
       this.hidden.style.left = `${left - this.board.offsetWidth}px`;
       this.hidden.style.width = `${this.dragged.offsetWidth}px`;
       this.hidden.style.height = `${this.dragged.offsetHeight}px`;
+      this.dragged.classList.toggle("hidden");
       this.board.addEventListener("mousemove", this.dragMove);
       document.addEventListener("mousemove", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
@@ -207,21 +210,21 @@ class Board {
   dragMove(event) {
     event.preventDefault();
     if (!this.dragged) {
+      this.hidden = null;
       return;
     }
-    this.dragged.style.display = "none";
+    console.log(this.dragged);
     this.hidden.style.top = `${event.pageY - this.top}px`;
     this.hidden.style.left = `${event.pageX - this.left}px`;
   }
   mouseUp() {
-    if (!this.dragged || !this.newPlace) {
-      return;
+    if (this.dragged && this.newPlace) {
+      this.newPlace.replaceWith(this.dragged);
+      document.body.querySelector(".dragged").remove();
+      console.log(this.dragged);
+      this.dragged.classList.toggle("hidden");
+      this.dragged = null;
     }
-    this.newPlace.replaceWith(this.dragged);
-    this.dragged.style.display = "flex";
-    document.body.removeChild(document.body.querySelector(".dragged"));
-    this.hidden = null;
-    this.dragged = null;
   }
   showPossiblePlace(event) {
     event.preventDefault();
@@ -246,9 +249,9 @@ class Board {
       this.newPlace.style.height = `${this.hidden.offsetHeight}px`;
       const itemIndex = allPos.findIndex(item => item > event.pageY);
       if (itemIndex !== -1) {
-        closestColumnTask.insertBefore(this.newPlace, allTasks[itemIndex - 1]);
+        closestColumnTask.before(this.newPlace);
       } else {
-        closestColumnTask.appendChild(this.newPlace);
+        closestColumnTask.append(this.newPlace);
       }
     }
   }
