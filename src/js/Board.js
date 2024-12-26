@@ -213,8 +213,7 @@ export default class Board {
 
       this.dragged.classList.toggle("hidden")
 
-      this.board.addEventListener("mousemove", this.dragMove);
-      document.addEventListener("mousemove", this.showPossiblePlace);
+      document.addEventListener("mouseover", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
     }
   }
@@ -226,7 +225,6 @@ export default class Board {
 
       return;
     }
-    console.log(this.dragged)
     this.hidden.style.top = `${event.pageY - this.top}px`;
     this.hidden.style.left = `${event.pageX - this.left}px`;
   }
@@ -237,9 +235,7 @@ export default class Board {
     this.newPlace.replaceWith(this.dragged);
 
     document.body.querySelector(".dragged").remove();
-    console.log(this.dragged);
     this.dragged.classList.toggle("hidden")
-
 
     this.dragged = null;
     }
@@ -249,8 +245,12 @@ export default class Board {
   showPossiblePlace(event) {
     event.preventDefault();
     if (!this.dragged) {
+      this.hidden = null;
+
       return;
     }
+    this.hidden.style.top = `${event.pageY - this.top}px`;
+    this.hidden.style.left = `${event.pageX - this.left}px`;
 
     const closestColumn = event.target.closest(".column");
 
