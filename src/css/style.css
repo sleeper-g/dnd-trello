@@ -104,3 +104,6 @@ body {
 .close::after {
     content: '✕';
 }
+.hidden {
+    display: none;
+}
