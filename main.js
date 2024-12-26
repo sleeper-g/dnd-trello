@@ -202,8 +202,7 @@ class Board {
       this.hidden.style.width = `${this.dragged.offsetWidth}px`;
       this.hidden.style.height = `${this.dragged.offsetHeight}px`;
       this.dragged.classList.toggle("hidden");
-      this.board.addEventListener("mousemove", this.dragMove);
-      document.addEventListener("mousemove", this.showPossiblePlace);
+      document.addEventListener("mouseover", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
     }
   }
@@ -213,7 +212,6 @@ class Board {
       this.hidden = null;
       return;
     }
-    console.log(this.dragged);
     this.hidden.style.top = `${event.pageY - this.top}px`;
     this.hidden.style.left = `${event.pageX - this.left}px`;
   }
@@ -221,7 +219,6 @@ class Board {
     if (this.dragged && this.newPlace) {
       this.newPlace.replaceWith(this.dragged);
       document.body.querySelector(".dragged").remove();
-      console.log(this.dragged);
       this.dragged.classList.toggle("hidden");
       this.dragged = null;
     }
@@ -229,8 +226,11 @@ class Board {
   showPossiblePlace(event) {
     event.preventDefault();
     if (!this.dragged) {
+      this.hidden = null;
       return;
     }
+    this.hidden.style.top = `${event.pageY - this.top}px`;
+    this.hidden.style.left = `${event.pageX - this.left}px`;
     const closestColumn = event.target.closest(".column");
     if (closestColumn) {
       const closestColumnTask = closestColumn.querySelector(".tasks-list");
