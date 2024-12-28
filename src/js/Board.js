@@ -274,10 +274,17 @@ export default class Board {
       this.newPlace.style.height = `${this.hidden.offsetHeight}px`;
 
       const itemIndex = allPos.findIndex((item) => item > event.pageY);
-      if (itemIndex !== -1) {
-        closestColumnTask.before(this.newPlace);
-      } else {
-        closestColumnTask.append(this.newPlace);
+      if (itemIndex) {
+        if (allTasks[itemIndex]){
+          if (itemIndex === 1 && event.pageY > closestColumnTask.getBoundingClientRect().y) {
+            allTasks[0].before(this.newPlace);
+            return;
+          }
+        allTasks[itemIndex].before(this.newPlace);
+        }
+        else {
+          closestColumnTask.append(this.newPlace);
+        }
       }
     }
   }
