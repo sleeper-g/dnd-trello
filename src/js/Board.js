@@ -14,7 +14,6 @@ export default class Board {
     this.removeTask = this.removeTask.bind(this);
     this.saveListOfTasks = this.saveListOfTasks.bind(this);
     this.mouseDown = this.mouseDown.bind(this);
-    this.dragMove = this.dragMove.bind(this);
     this.mouseUp = this.mouseUp.bind(this);
     this.drawSavedTasks = this.drawSavedTasks.bind(this);
     this.showPossiblePlace = this.showPossiblePlace.bind(this);
@@ -192,100 +191,62 @@ export default class Board {
   mouseDown(event) {
     event.preventDefault();
     if (event.target.classList.contains("task")) {
+      // карточка которую мы схватили
       this.dragged = event.target;
+      // копию используем в качестве показа места под сброс
       this.hidden = event.target.cloneNode(true);
-      this.hidden.querySelector(".close").remove();
-      this.hidden.classList.add("dragged");
-      this.hidden.classList.add("ghost");
-      this.hidden.style.width = `${this.dragged.offsetWidth}px`;
-      this.hidden.style.height = `${this.dragged.offsetHeight}px`;
-      document.body.append(this.hidden);
+      this.dragged.after(this.hidden)
+
+      this.dragged.classList.toggle("dragged");
 
       const { top, left } = event.target.getBoundingClientRect();
-      this.top = event.pageY - top;
-      this.left = event.pageX - left;
+      this.top = top - event.target.getBoundingClientRect().height;
+      this.left = left;
 
-      this.hidden.style.top = `${top - this.dragged.offsetHeight}px`;
-      this.hidden.style.left = `${left - this.board.offsetWidth}px`;
+      // need to do: correct position on element height
+      this.dragged.style.top = `${this.top}px`;
+      this.dragged.style.left = `${event.pageX - this.left}px`
 
-      this.hidden.style.width = `${this.dragged.offsetWidth}px`;
-      this.hidden.style.height = `${this.dragged.offsetHeight}px`;
+      this.hidden.classList.toggle("hidden")
 
-      this.dragged.classList.toggle("hidden")
-
-      document.addEventListener("mouseover", this.showPossiblePlace);
+      document.addEventListener("mousemove", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
     }
   }
 
-  dragMove(event) {
-    event.preventDefault();
-    if (!this.dragged) {
-      this.hidden = null;
-
-      return;
-    }
-    this.hidden.style.top = `${event.pageY - this.top}px`;
-    this.hidden.style.left = `${event.pageX - this.left}px`;
-  }
-
   mouseUp() {
-    if (this.dragged && this.newPlace) {
 
-    this.newPlace.replaceWith(this.dragged);
-
-    document.body.querySelector(".dragged").remove();
-    this.dragged.classList.toggle("hidden")
-
-    this.dragged = null;
-    }
+    this.hidden.replaceWith(this.dragged);
+    this.dragged.classList.toggle("dragged");
+    this.dragged.style.top = '';
+    this.dragged.style.left = '';
+    
+    this.hidden.remove();
+    document.removeEventListener("mousemove", this.showPossiblePlace);
 
   }
 
   showPossiblePlace(event) {
     event.preventDefault();
-    if (!this.dragged) {
-      this.hidden = null;
 
-      return;
-    }
-    this.hidden.style.top = `${event.pageY - this.top}px`;
-    this.hidden.style.left = `${event.pageX - this.left}px`;
+    this.dragged.style.top = `${event.pageY - this.top}px`;
+    this.dragged.style.left = `${event.pageX - this.left}px`
+
+
 
     const closestColumn = event.target.closest(".column");
-
     if (closestColumn) {
       const closestColumnTask = closestColumn.querySelector(".tasks-list");
-      const allTasks = closestColumn.querySelectorAll(".task");
-      const allPos = [closestColumn.getBoundingClientRect().top];
+      if (closestColumnTask.childElementCount){
 
-      if (allTasks) {
-        for (const item of allTasks) {
-          allPos.push(item.getBoundingClientRect().top + item.offsetHeight / 2);
-        }
-      }
+        const {x, y} = event.target.getBoundingClientRect();
+        const element = document.elementFromPoint(x,y);
 
-      if (!this.newPlace) {
-        this.newPlace = document.createElement("div");
-        this.newPlace.classList.add("task-list__new-place");
-      }
+        element.after(this.hidden);1
 
-      this.newPlace.style.width = `${this.hidden.offsetWidth}px`;
-      this.newPlace.style.height = `${this.hidden.offsetHeight}px`;
-
-      const itemIndex = allPos.findIndex((item) => item > event.pageY);
-      if (itemIndex) {
-        if (allTasks[itemIndex]){
-          if (itemIndex === 1 && event.pageY > closestColumnTask.getBoundingClientRect().y) {
-            allTasks[0].before(this.newPlace);
-            return;
-          }
-        allTasks[itemIndex].before(this.newPlace);
-        }
-        else {
-          closestColumnTask.append(this.newPlace);
-        }
-      }
-    }
-  }
-}
+      } else {
+        closestColumnTask.append(this.hidden);
+      };
+    };
+  };
+};

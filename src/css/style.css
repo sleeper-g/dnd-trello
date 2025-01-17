@@ -88,22 +88,16 @@ body {
     position: relative;
 }
 .dragged {
-    border-radius: 5px;
     position: absolute;
     z-index: 999;
-    background-color: #ffffff;
-    list-style: none;
-    padding: 10px;
-    margin: 10px 0px;
     cursor: grabbing;
-    display: flex;
-    justify-content: space-between;
     opacity: 50%;
     transform: rotate(10deg);
+    pointer-events: none;
 }
 .close::after {
     content: '✕';
 }
 .hidden {
-    display: none;
+    visibility:hidden;
 }
