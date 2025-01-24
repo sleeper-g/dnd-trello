@@ -94,7 +94,7 @@ class Board {
       new Card(parent, taskValue).addTask();
       const columnAdd = document.createElement("div");
       columnAdd.classList.add("column-add");
-      columnAdd.textContent = "Add card";
+      columnAdd.textContent = "Add another card";
       closestColumn.querySelector(".column-add-form").remove();
       closestColumn.append(columnAdd);
       columnAdd.addEventListener("click", this.addInput);
@@ -185,6 +185,8 @@ class Board {
       // карточка которую мы схватили
       this.dragged = event.target;
       // копию используем в качестве показа места под сброс
+      const originWidth = this.dragged.offsetWidth;
+      const originHeight = this.dragged.offsetHeight;
       this.hidden = event.target.cloneNode(true);
       this.dragged.after(this.hidden);
       this.dragged.classList.toggle("dragged");
@@ -198,40 +200,46 @@ class Board {
       // need to do: correct position on element height
       this.dragged.style.top = `${this.top}px`;
       this.dragged.style.left = `${event.pageX - this.left}px`;
-      this.hidden.classList.toggle("hidden");
+      this.dragged.style.width = `${originWidth}px`;
+      this.dragged.style.height = `${originHeight}px`;
+      //this.hidden.classList.toggle("hidden")
+
       document.addEventListener("mousemove", this.showPossiblePlace);
       document.addEventListener("mouseup", this.mouseUp);
     }
   }
   mouseUp() {
-    this.hidden.replaceWith(this.dragged);
-    this.dragged.classList.toggle("dragged");
-    this.dragged.style.top = '';
-    this.dragged.style.left = '';
-    this.hidden.remove();
-    document.removeEventListener("mousemove", this.showPossiblePlace);
+    if (this.dragged) {
+      this.hidden.before(this.dragged);
+      // this.hidden.replaceWith(this.dragged);
+      this.dragged.classList.toggle("dragged");
+      this.dragged.style.top = '';
+      this.dragged.style.left = '';
+      this.hidden.remove();
+      document.removeEventListener("mousemove", this.showPossiblePlace);
+      this.dragged.style.width = '';
+      this.dragged.style.height = '';
+      this.dragged = null;
+      this.hidden = null;
+    }
   }
   showPossiblePlace(event) {
     event.preventDefault();
     this.dragged.style.top = `${event.pageY - this.top}px`;
     this.dragged.style.left = `${event.pageX - this.left}px`;
     const closestColumn = event.target.closest(".column");
-    if (closestColumn) {
-      const closestColumnTask = closestColumn.querySelector(".tasks-list");
-      if (closestColumnTask.childElementCount) {
-        const {
-          x,
-          y
-        } = event.target.getBoundingClientRect();
-        const element = document.elementFromPoint(x, y);
-        element.after(this.hidden);
-        1;
-      } else {
-        closestColumnTask.append(this.hidden);
-      }
-      ;
+    if (!closestColumn) return;
+    const closestColumnTask = closestColumn.querySelector(".tasks-list");
+    if (!closestColumnTask.childElementCount) {
+      closestColumnTask.append(this.hidden);
+      return;
     }
-    ;
+    const {
+      x,
+      y
+    } = event.target.getBoundingClientRect();
+    const element = document.elementFromPoint(x, y);
+    element.after(this.hidden);
   }
 }
 ;
