@@ -8,7 +8,7 @@ class Card {
     this.value = value;
   }
   addTask() {
-    const newEl = document.createElement("li");
+    const newEl = document.createElement("div");
     newEl.classList.add("task");
     newEl.textContent = this.value;
     newEl.draggable = true;
@@ -45,17 +45,17 @@ class Board {
   static get markupBoard() {
     return `<div class="column">
     <h2 class="column-header">todo</h2>
-    <ul class="tasks-list todo"></ul>
+    <div class="tasks-list todo"></div>
     <div class="column-add">Add another card</div>
   </div>
   <div class="column">
     <h2 class="column-header">in progress</h2>
-    <ul class="tasks-list in-progress" id="trew"></ul> 
+    <div class="tasks-list in-progress"></div> 
     <div class="column-add">Add another card</div>
   </div>
   <div class="column">
     <h2 class="column-header">done</h2>
-    <ul class="tasks-list done"></ul>
+    <div class="tasks-list done"></div>
     <div class="column-add">Add another card</div>
   </div>`;
   }
@@ -223,94 +223,50 @@ class Board {
     this.hidden.remove();
     this.dragged = null;
     this.hidden = null;
-
-    /*     if (this.dragged){
-          this.hidden.before(this.dragged)
-         // this.hidden.replaceWith(this.dragged);
-          this.dragged.classList.toggle("dragged");
-          this.dragged.style.top = '';
-          this.dragged.style.left = '';
-    
-          this.hidden.classList.toggle("hidden");
-    
-          this.hidden.remove();
-          this.dragged.style.width = '';
-          this.dragged.style.height = '';
-          this.dragged = null;
-          this.hidden = null;
-        }
-     */
   }
   showPossiblePlace(event) {
     event.preventDefault();
+    if (!this.dragged || !event.target.closest) return;
     this.dragged.style.top = `${event.pageY - this.shift.y}px`;
     this.dragged.style.left = `${event.pageX - this.shift.x}px`;
-    const closestColumn = event.target.closest(".column");
-    if (!closestColumn) return;
-    // work with ul tag
-    const closestColumnTask = closestColumn.querySelector(".tasks-list");
-    // empty tasks-list
-    console.log(closestColumnTask.children.length);
-    if (closestColumnTask && !closestColumnTask.children.length) {
-      this.hidden.remove();
-      closestColumnTask.append(this.hidden);
-    }
-    ;
     const targetEl = event.target.closest(".task");
     if (!targetEl && !event.target.classList.contains("tasks-list")) return;
     if (event.target.classList.contains("tasks-list")) {
-      const listCard = Array.from(event.target.children).filter(card => !card.classList.contains("dragged") && !card.classList.contains("hidden"));
-      //console.log(listCard[listCard.length - 1])
-      if (event.clientY > listCard[listCard.length - 1].offsetTop + listCard[listCard.length - 1].offsetHeight) {
-        if (event.target.children[event.target.children.length - 1].classList.contains("hidden")) {
-          this.hidden.remove();
-          event.target.append(this.hidden);
+      const listCard = [...event.target.children].filter(card => !card.classList.contains("dragged") && !card.classList.contains("hidden"));
+
+      // empty column
+      if (listCard && !listCard.length) {
+        this.hidden.remove();
+        event.target.append(this.hidden);
+      } else {
+        // mouse lower last element
+        if (event.clientY - 146 > listCard[listCard.length - 1].offsetTop - listCard[listCard.length - 1].offsetHeight) {
+          // last elem is hidden
+          if (!event.target.children[event.target.children.length - 1].classList.contains("hidden")) {
+            this.hidden.remove();
+            event.target.append(this.hidden);
+          }
+          ;
+        } else {
+          if (event.clientY - 100 < listCard[0].offsetTop) {
+            this.hidden.remove();
+            listCard[0].before(this.hidden);
+            return;
+          }
+          for (let item in listCard) {
+            let res = event.clientY - 100 > listCard[item].offsetTop && event.clientY - 100 < listCard[item].offsetTop + listCard[item].offsetHeight / 2 ? true : false;
+            if (res) {
+              this.hidden.remove();
+              listCard[item].after(this.hidden);
+              return;
+            }
+          }
         }
+        ;
       }
+      ;
     }
     ;
-    if (targetEl) {
-      const isLocationUp = this.isPositionUp(targetEl.offsetTop, targetEl.offsetHeight, event.clientY // - this.padding,
-      );
-      if (isLocationUp && event.target.previousElementSibling && event.target.previousElementSibling.classList.contains("hidden")) {
-        return;
-      }
-      if (!isLocationUp && event.target.nextElementSibling && event.target.nextElementSibling.classList.contains("hidden")) {
-        return;
-      }
-      this.hidden.remove();
-      isLocationUp ? targetEl.before(this.hidden) : targetEl.after(this.hidden);
-    }
-    /*     // cursor under hidden card
-        const closestCard = event.target.closest(".task")
-        if (closestCard && closestCard.classList.contains("hidden")) return
-        // cursor outside card list
-        const closestColumn = event.target.closest(".column");
-        if (!closestColumn) return;
-        // cursor in empty card list and add element in empty list
-        const closestColumnTask = closestColumn.querySelector(".tasks-list");
-        if (!closestColumnTask.childElementCount){
-          closestColumnTask.append(this.hidden);
-          return;
-        } */
-    // change position of hidden card
-    /*     const listCard = (Array.from(closestColumnTask.children).filter(
-          (card) => 
-            !card.classList.contains("dragged") &&
-            !card.classList.contains("hidden")
-        )) */
-    //console.log(listCard);
-
-    //console.log(this.hidden.classList);
-    //const {x, y} = event.target.getBoundingClientRect();
-    //const element = document.elementFromPoint(x,y);
-    //element.after(this.hidden)
-  }
-  isPositionUp(elemTop, elemheight, clientY) {
-    if (clientY > elemTop && clientY < elemTop + elemheight / 2) {
-      return true;
-    }
-    return false;
   }
 }
 ;
