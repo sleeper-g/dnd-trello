@@ -99,5 +99,6 @@ body {
     content: '✕';
 }
 .hidden {
-    visibility:hidden;
+    border: black 1px dashed;
+    opacity: 0.7;
 }

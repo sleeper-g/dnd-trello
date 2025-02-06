@@ -190,66 +190,165 @@ export default class Board {
 
   mouseDown(event) {
     event.preventDefault();
-    if (event.target.classList.contains("task")) {
-      // карточка которую мы схватили
-      this.dragged = event.target;
-      // копию используем в качестве показа места под сброс
-      const originWidth = this.dragged.offsetWidth;
-      const originHeight = this.dragged.offsetHeight;
-      this.hidden = event.target.cloneNode(true);
-      this.dragged.after(this.hidden)
 
-      this.dragged.classList.toggle("dragged");
+    // if click on close elem
+    if (event.target.classList.contains("close")) return;
+    
+    const clickedTask = event.target.closest(".task");
+    if (!clickedTask) return;
 
-      const { top, left } = event.target.getBoundingClientRect();
-      this.top = top - event.target.getBoundingClientRect().height;
-      this.left = left;
-
-      // need to do: correct position on element height
-      this.dragged.style.top = `${this.top}px`;
-      this.dragged.style.left = `${event.pageX - this.left}px`
-      this.dragged.style.width = `${originWidth}px`
-      this.dragged.style.height = `${originHeight}px`
-      //this.hidden.classList.toggle("hidden")
-
-      document.addEventListener("mousemove", this.showPossiblePlace);
-      document.addEventListener("mouseup", this.mouseUp);
+    if (!this.dragged){
+      this.dragged = clickedTask;
+      this.dragged.style.width = `${clickedTask.offsetWidth}px`;
+      this.dragged.style.height = `${clickedTask.offsetHeight}px`;
     }
+    //this.hidden = event.target.cloneNode(true);
+    //this.hidden.classList.toggle("hidden")
+    if (!this.hidden){
+      this.hidden = document.createElement("div");
+      this.hidden.classList.add("hidden");
+      this.hidden.style.width = `${clickedTask.offsetWidth}px`;
+      this.hidden.style.height = `${clickedTask.offsetHeight}px`;
+      this.dragged.after(this.hidden)
+    };
+    // cursor offset
+    this.shift = {
+      // somehow it work
+      x: event.clientX - 10,
+      y: event.clientY - clickedTask.getBoundingClientRect().top + 70
+    };
+    // start position
+    this.dragged.style.top = `${event.pageY - this.shift.y}px`;
+    this.dragged.style.left = `${event.pageX - this.shift.x}px`;
+    this.dragged.classList.toggle("dragged");
+
+    document.addEventListener("mousemove", this.showPossiblePlace);
+    document.addEventListener("mouseup", this.mouseUp);
   }
 
   mouseUp() {
-    if (this.dragged){
+    if (!this.dragged || !this.hidden) return;
+    document.removeEventListener("mousemove", this.showPossiblePlace);
+    this.dragged.removeAttribute("style")
+    this.hidden.before(this.dragged);
+    this.dragged.classList.remove("dragged");
+    this.hidden.remove();
+    this.dragged = null;
+    this.hidden = null;
+
+/*     if (this.dragged){
       this.hidden.before(this.dragged)
      // this.hidden.replaceWith(this.dragged);
       this.dragged.classList.toggle("dragged");
       this.dragged.style.top = '';
       this.dragged.style.left = '';
-    
+
+      this.hidden.classList.toggle("hidden");
+
       this.hidden.remove();
-      document.removeEventListener("mousemove", this.showPossiblePlace);
       this.dragged.style.width = '';
       this.dragged.style.height = '';
       this.dragged = null;
       this.hidden = null;
     }
-  }
+ */  }
 
   showPossiblePlace(event) {
     event.preventDefault();
 
-    this.dragged.style.top = `${event.pageY - this.top}px`;
-    this.dragged.style.left = `${event.pageX - this.left}px`
+    this.dragged.style.top = `${event.pageY - this.shift.y}px`;
+    this.dragged.style.left = `${event.pageX - this.shift.x}px`
 
+    
     const closestColumn = event.target.closest(".column");
     if (!closestColumn) return;
+    // work with ul tag
     const closestColumnTask = closestColumn.querySelector(".tasks-list");
+    // empty tasks-list
+    console.log(closestColumnTask.children.length)
+    if (closestColumnTask && 
+      (!closestColumnTask.children.length)){
+      this.hidden.remove();
+      closestColumnTask.append(this.hidden);
+    };
+
+    const targetEl  = event.target.closest(".task");
+
+    if (!targetEl && !event.target.classList.contains("tasks-list")) return;
+
+    if (event.target.classList.contains("tasks-list")) {
+      const listCard = Array.from(event.target.children).filter(
+        (card) => 
+          !card.classList.contains("dragged") &&
+          !card.classList.contains("hidden")
+      );
+      //console.log(listCard[listCard.length - 1])
+      if (event.clientY > 
+        listCard[listCard.length - 1].offsetTop +
+        listCard[listCard.length -1].offsetHeight
+      ){
+        if (event.target.children[event.target.children.length - 1]
+          .classList.contains("hidden")){
+          this.hidden.remove();
+          event.target.append(this.hidden);    
+        }
+      }
+    };
+
+    if (targetEl){
+      const isLocationUp = this.isPositionUp(
+        targetEl.offsetTop,
+        targetEl.offsetHeight,
+        event.clientY,// - this.padding,
+      )
     
+    if (isLocationUp &&
+      event.target.previousElementSibling &&
+      event.target.previousElementSibling.classList.contains("hidden")
+    ) {
+      return;
+    }
+    if (
+      !isLocationUp &&
+      event.target.nextElementSibling &&
+      event.target.nextElementSibling.classList.contains("hidden")
+    ) {
+      return;
+    }
+    this.hidden.remove();
+    isLocationUp
+      ? targetEl.before(this.hidden)
+      : targetEl.after(this.hidden);
+  }
+/*     // cursor under hidden card
+    const closestCard = event.target.closest(".task")
+    if (closestCard && closestCard.classList.contains("hidden")) return
+    // cursor outside card list
+    const closestColumn = event.target.closest(".column");
+    if (!closestColumn) return;
+    // cursor in empty card list and add element in empty list
+    const closestColumnTask = closestColumn.querySelector(".tasks-list");
     if (!closestColumnTask.childElementCount){
       closestColumnTask.append(this.hidden);
       return;
+    } */
+    // change position of hidden card
+/*     const listCard = (Array.from(closestColumnTask.children).filter(
+      (card) => 
+        !card.classList.contains("dragged") &&
+        !card.classList.contains("hidden")
+    )) */
+    //console.log(listCard);
+
+    //console.log(this.hidden.classList);
+    //const {x, y} = event.target.getBoundingClientRect();
+    //const element = document.elementFromPoint(x,y);
+    //element.after(this.hidden)
+  };
+  isPositionUp(elemTop, elemheight, clientY) {
+    if (clientY > elemTop && clientY < elemTop + elemheight / 2) {
+      return true;
     }
-    const {x, y} = event.target.getBoundingClientRect();
-    const element = document.elementFromPoint(x,y);
-    element.after(this.hidden)
+    return false;
   };
 };
