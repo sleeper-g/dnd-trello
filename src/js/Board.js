@@ -287,4 +287,5 @@ export default class Board {
         };
       };
     };
+  };
 };
