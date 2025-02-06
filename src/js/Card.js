@@ -4,7 +4,7 @@ export default class Card {
     this.value = value;
   }
   addTask() {
-    const newEl = document.createElement("li");
+    const newEl = document.createElement("div");
     newEl.classList.add("task");
     newEl.textContent = this.value;
     newEl.draggable = true;

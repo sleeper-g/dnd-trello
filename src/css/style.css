@@ -36,7 +36,7 @@ body {
 .column-header {
     text-transform: uppercase;
 }
-.task-list {
+.tasks-list {
     min-height: 50px;
     padding: 20px;
 }
